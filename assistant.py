@@ -10,7 +10,9 @@ from livekit.agents.llm import (
 )
 from livekit.agents.voice_assistant import VoiceAssistant
 from livekit.plugins import deepgram, openai, silero
+import os
 
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 class AssistantFunction(agents.llm.FunctionContext):
     """This class is used to define functions that will be called by the assistant."""
@@ -36,7 +38,7 @@ class AssistantFunction(agents.llm.FunctionContext):
 
 async def get_video_track(room: rtc.Room):
     """Get the first video track from the room. We'll use this track to process images."""
-
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     video_track = asyncio.Future[rtc.RemoteVideoTrack]()
 
     for _, participant in room.remote_participants.items():
@@ -52,6 +54,7 @@ async def get_video_track(room: rtc.Room):
 
 
 async def entrypoint(ctx: JobContext):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     await ctx.connect()
     print(f"Room name: {ctx.room.name}")
 
@@ -60,8 +63,9 @@ async def entrypoint(ctx: JobContext):
             ChatMessage(
                 role="system",
                 content=(
-                    "Your name is Alloy. You are a funny, witty bot. Your interface with users will be voice and vision."
-                    "Respond with short and concise answers. Avoid using unpronouncable punctuation or emojis."
+                    "Tu nombre es Onyx. Tu interfaz con los usuarios será de voz y visión."
+                    "Adopta la voz y actitud de David Goggins. Prioriza mensajes que empujen a la gente a enfrentar y superar sus miedos, y a nunca conformarse con menos de lo que pueden lograr. Muestra una fuerte mentalidad de guerrero"
+                    "Evita usar signos de puntuación impronunciables o emojis."
                 ),
             )
         ]
@@ -72,7 +76,7 @@ async def entrypoint(ctx: JobContext):
     # Since OpenAI does not support streaming TTS, we'll use it with a StreamAdapter
     # to make it compatible with the VoiceAssistant
     openai_tts = tts.StreamAdapter(
-        tts=openai.TTS(voice="alloy"),
+        tts=openai.TTS(voice="onyx"),
         sentence_tokenizer=tokenize.basic.SentenceTokenizer(),
     )
 
@@ -80,7 +84,7 @@ async def entrypoint(ctx: JobContext):
 
     assistant = VoiceAssistant(
         vad=silero.VAD.load(),  # We'll use Silero's Voice Activity Detector (VAD)
-        stt=deepgram.STT(),  # We'll use Deepgram's Speech To Text (STT)
+        stt=deepgram.STT(model="nova-2", language="es"),  # We'll use Deepgram's Speech To Text (STT)
         llm=gpt,
         tts=openai_tts,  # We'll use OpenAI's Text To Speech (TTS)
         fnc_ctx=AssistantFunction(),
@@ -106,14 +110,14 @@ async def entrypoint(ctx: JobContext):
     @chat.on("message_received")
     def on_message_received(msg: rtc.ChatMessage):
         """This event triggers whenever we get a new message from the user."""
-
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         if msg.message:
             asyncio.create_task(_answer(msg.message, use_image=False))
 
     @assistant.on("function_calls_finished")
     def on_function_calls_finished(called_functions: list[agents.llm.CalledFunction]):
         """This event triggers when an assistant's function call completes."""
-
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         if len(called_functions) == 0:
             return
 
@@ -124,7 +128,7 @@ async def entrypoint(ctx: JobContext):
     assistant.start(ctx.room)
 
     await asyncio.sleep(1)
-    await assistant.say("Hi there! How can I help?", allow_interruptions=True)
+    await assistant.say("¡Hola! ¿En qué puedo ayudarte?", allow_interruptions=True)
 
     while ctx.room.connection_state == rtc.ConnectionState.CONN_CONNECTED:
         video_track = await get_video_track(ctx.room)
@@ -136,4 +140,10 @@ async def entrypoint(ctx: JobContext):
 
 
 if __name__ == "__main__":
+    os.environ["LIVEKIT_URL"] = "wss://gepp-demo-mxc38o6k.livekit.cloud"
+    os.environ["LIVEKIT_API_KEY"] = "APIZNuxajEUReYU"
+    os.environ["LIVEKIT_API_SECRET"] = "GOPOZQpGi0MpqB7s8vYHB5dEqEBt77cPJfoa69BLmf1"
+    os.environ["DEEPGRAM_API_KEY"] = "c7ea1764836e87e6c8afd341df50c6daf598ff96"
+    os.environ["OPENAI_API_KEY"] = "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"
+    print(os.environ.get("LIVEKIT_API_KEY"))
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
