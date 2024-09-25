@@ -9,7 +9,7 @@ from livekit.agents.llm import (
     ChatMessage,
 )
 from livekit.agents.voice_assistant import VoiceAssistant
-from livekit.plugins import deepgram, openai, silero
+from livekit.plugins import deepgram, openai, silero, elevenlabs, google
 import os
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -63,9 +63,13 @@ async def entrypoint(ctx: JobContext):
             ChatMessage(
                 role="system",
                 content=(
-                    "Tu nombre es Onyx. Tu interfaz con los usuarios será de voz y visión."
+                    "Tu nombre es Onyx. Tu interfaz con los usuarios será de voz.."
                     "Adopta la voz y actitud de David Goggins. Prioriza mensajes que empujen a la gente a enfrentar y superar sus miedos, y a nunca conformarse con menos de lo que pueden lograr. Muestra una fuerte mentalidad de guerrero"
-                    "Evita usar signos de puntuación impronunciables o emojis."
+                    "Evita usar signos de puntuación como '*' o emojis. Responde concretamente."
+                    "El usuario con el que hablas tiene las siguientes propiedades:"
+                    "{'employee_name': 'Joel','employee_lastname': 'Alvarado','cobertura': '0.8','efectividad_compra': '0.7','desempeño': '0.5','drop_size': '50','descuentos': '2','hit_rate': '200'}"
+                    "Y tiene los siguientes objetivos:"
+                    "{'cobertura': '0.9','efectividad_compra': '0.6','desempeno': '0.8','drop_size': '30','descuentos': '5','hit_rate': '500'}"
                 ),
             )
         ]
@@ -80,13 +84,17 @@ async def entrypoint(ctx: JobContext):
         sentence_tokenizer=tokenize.basic.SentenceTokenizer(),
     )
 
+    elevenlabs_tts = elevenlabs.TTS(model_id="eleven_turbo_v2_5")
+    google_tts = google.TTS(language="es-US", gender="male", voice_name="es-US-Polyglot-1", speaking_rate = 1.2, pitch=-10.0)
+
+
     latest_image: rtc.VideoFrame | None = None
 
     assistant = VoiceAssistant(
         vad=silero.VAD.load(),  # We'll use Silero's Voice Activity Detector (VAD)
         stt=deepgram.STT(model="nova-2", language="es"),  # We'll use Deepgram's Speech To Text (STT)
         llm=gpt,
-        tts=openai_tts,  # We'll use OpenAI's Text To Speech (TTS)
+        tts=google_tts,  # We'll use OpenAI's Text To Speech (TTS)
         fnc_ctx=AssistantFunction(),
         chat_ctx=chat_context,
     )
@@ -145,5 +153,7 @@ if __name__ == "__main__":
     os.environ["LIVEKIT_API_SECRET"] = "GOPOZQpGi0MpqB7s8vYHB5dEqEBt77cPJfoa69BLmf1"
     os.environ["DEEPGRAM_API_KEY"] = "c7ea1764836e87e6c8afd341df50c6daf598ff96"
     os.environ["OPENAI_API_KEY"] = "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"
+    os.environ["ELEVEN_API_KEY"] = "sk_3362f763a26d3e6eadd8a8e50227010e81dadd7685762ee4"
+    #os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
     print(os.environ.get("LIVEKIT_API_KEY"))
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
