@@ -11,8 +11,10 @@ from livekit.agents.llm import (
 from livekit.agents.voice_assistant import VoiceAssistant
 from livekit.plugins import deepgram, openai, silero, elevenlabs, google
 import os
+import sys
 
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 class AssistantFunction(agents.llm.FunctionContext):
     """This class is used to define functions that will be called by the assistant."""
@@ -38,7 +40,9 @@ class AssistantFunction(agents.llm.FunctionContext):
 
 async def get_video_track(room: rtc.Room):
     """Get the first video track from the room. We'll use this track to process images."""
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    if sys.platform == 'win32':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
     video_track = asyncio.Future[rtc.RemoteVideoTrack]()
 
     for _, participant in room.remote_participants.items():
@@ -54,7 +58,9 @@ async def get_video_track(room: rtc.Room):
 
 
 async def entrypoint(ctx: JobContext):
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    if sys.platform == 'win32':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
     await ctx.connect()
     print(f"Room name: {ctx.room.name}")
 
@@ -119,14 +125,16 @@ async def entrypoint(ctx: JobContext):
     @chat.on("message_received")
     def on_message_received(msg: rtc.ChatMessage):
         """This event triggers whenever we get a new message from the user."""
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         if msg.message:
             asyncio.create_task(_answer(msg.message, use_image=False))
 
     @assistant.on("function_calls_finished")
     def on_function_calls_finished(called_functions: list[agents.llm.CalledFunction]):
         """This event triggers when an assistant's function call completes."""
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         if len(called_functions) == 0:
             return
 
@@ -153,8 +161,9 @@ if __name__ == "__main__":
     os.environ["LIVEKIT_API_KEY"] = "APIZNuxajEUReYU"
     os.environ["LIVEKIT_API_SECRET"] = "GOPOZQpGi0MpqB7s8vYHB5dEqEBt77cPJfoa69BLmf1"
     os.environ["DEEPGRAM_API_KEY"] = "c7ea1764836e87e6c8afd341df50c6daf598ff96"
-    os.environ["OPENAI_API_KEY"] = "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"
     os.environ["ELEVEN_API_KEY"] = "sk_3362f763a26d3e6eadd8a8e50227010e81dadd7685762ee4"
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "tts-credentials.json"
     print(os.environ.get("LIVEKIT_API_KEY"))
+    if sys.platform == 'win32':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
