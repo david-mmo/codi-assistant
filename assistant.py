@@ -155,6 +155,6 @@ if __name__ == "__main__":
     os.environ["DEEPGRAM_API_KEY"] = "c7ea1764836e87e6c8afd341df50c6daf598ff96"
     os.environ["OPENAI_API_KEY"] = "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"
     os.environ["ELEVEN_API_KEY"] = "sk_3362f763a26d3e6eadd8a8e50227010e81dadd7685762ee4"
-    #os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "tts-credentials.json"
     print(os.environ.get("LIVEKIT_API_KEY"))
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
