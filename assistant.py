@@ -163,7 +163,7 @@ if __name__ == "__main__":
     os.environ["DEEPGRAM_API_KEY"] = "c7ea1764836e87e6c8afd341df50c6daf598ff96"
     os.environ["ELEVEN_API_KEY"] = "sk_3362f763a26d3e6eadd8a8e50227010e81dadd7685762ee4"
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "tts-credentials.json"
-    print(os.environ.get("LIVEKIT_API_KEY"))
+    print(os.environ.get("OPENAI_API_KEY"))
     if sys.platform == 'win32':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
