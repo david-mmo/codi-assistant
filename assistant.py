@@ -92,7 +92,7 @@ async def entrypoint(ctx: JobContext):
     )
 
     elevenlabs_tts = elevenlabs.TTS(model_id="eleven_turbo_v2_5")
-    google_tts = google.TTS(language="es-US", gender="male", voice_name="es-US-Polyglot-1", speaking_rate = 1.2, pitch=-10.0)
+    google_tts = google.TTS(language="es-US", gender="male", voice_name="es-US-Polyglot-1", speaking_rate = 1.2)
 
 
     latest_image: rtc.VideoFrame | None = None
