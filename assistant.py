@@ -157,9 +157,9 @@ async def entrypoint(ctx: JobContext):
 
 
 if __name__ == "__main__":
-    os.environ["LIVEKIT_URL"] = "wss://gepp-demo-mxc38o6k.livekit.cloud"
-    os.environ["LIVEKIT_API_KEY"] = "APIZNuxajEUReYU"
-    os.environ["LIVEKIT_API_SECRET"] = "GOPOZQpGi0MpqB7s8vYHB5dEqEBt77cPJfoa69BLmf1"
+    os.environ["LIVEKIT_URL"] = "wss://cody-aio50do2.livekit.cloud"
+    os.environ["LIVEKIT_API_KEY"] = "APIRdBNZ3KLBTQn"
+    os.environ["LIVEKIT_API_SECRET"] = "KekDeD0IHgcyngIcwZiQQBjTHeKbqp48Sxt8EPIZIeDC"
     os.environ["DEEPGRAM_API_KEY"] = "c7ea1764836e87e6c8afd341df50c6daf598ff96"
     os.environ["ELEVEN_API_KEY"] = "sk_3362f763a26d3e6eadd8a8e50227010e81dadd7685762ee4"
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "tts-credentials.json"
